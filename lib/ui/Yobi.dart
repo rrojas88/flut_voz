@@ -13,11 +13,13 @@ class Yobi {
 
   Function _speak;
   Function _oir;
+  Function _log;
 
 
   void buscandoMando( String _texto ){
     estado = 'BUSCANDO MANDO';
-    print("\n_________________________ $estado");
+    print("\n___________________ $estado");
+    log("___________________ $estado");
 
     _texto += '';
     texto = _texto.trim().toLowerCase();
@@ -40,6 +42,7 @@ class Yobi {
       /// Hay Mando.. recepción de Parametros
       if( accion != '' ){
         print('__> Ejecucion directa de ejecutaMando()');
+        log('__> Ejecucion directa de ejecutaMando()');
         ejecutaMando(  );
         return;
       }
@@ -47,6 +50,7 @@ class Yobi {
         for( Map m in mandos ){
           List <String> claves = m['claves'].split('|');
           //print('__> recorreMandos..');
+          log('__> recorreMandos..');
 
           if( ! hayAccion ){
 
@@ -57,6 +61,7 @@ class Yobi {
                 if( texto.contains( clave ) ){
                   // Encontrada la Clave
                   print( '__> Encontrada accion: ' + m['accion'] );
+                  log( '__> Encontrada accion: ' + m['accion'] );
                   mando = clonarMando( m );
                   accion = m['accion'];
                   
@@ -90,6 +95,7 @@ class Yobi {
 
         if( ! hayAccion ){
           print("\n\n"+'__> Verificar si se encontró MANDO: $accion');
+          log('__> Verificar si se encontró MANDO: $accion');
         }
       }
     }
@@ -97,12 +103,14 @@ class Yobi {
 
   void ejecutaMando(  ){
     print("\n"+'== == == == == == == == == == >> ejecutaMando(  )');
+    log('== == == == == == == == == == >> ejecutaMando(  )');
     print('TEXTO: "$texto", del MANDO =>');
     print(mando);
     pideMas = false;
 
     if( mando['paso'] == 0 ){
       print('Entra PASO = 0');
+      log('Entra PASO = 0');
       mando['paso']++;
       mando['funcIni']();
     }
@@ -120,11 +128,13 @@ class Yobi {
       }
 
       print('Ejecutará.. el paso: ${paso.toString()}');
+      log('Ejecutará.. el paso: ${paso.toString()}');
       mando['funcPaso' + paso.toString() ]();
     }
     else{
-      print('...ELSE de ejecutaMando(  ).. FIN ?');
-      print('ACCION= $accion');
+      print('...ELSE de ejecutaMando(  ).. FIN . ACCION = $accion');
+      log('...ELSE de ejecutaMando(  ).. FIN . ACCION = $accion');
+      
       mando['paso'] = 0;
 
         // Limpio Accion para ver si hay nuevo Mando
@@ -149,10 +159,13 @@ class Yobi {
   void hablar(  ){
     _speak( texto, mando );
   }
+  void log( String info ){
+    _log( info );
+  }
   set nuevoMando( Map mando ){
     mandos.add( mando );
   }
-  
+
   Map clonarMando( Map mandoX ){
     Map<String, dynamic> clon = {};
     mandoX.forEach((clave, valor){
@@ -173,13 +186,15 @@ class Yobi {
 }
 
 
-void init ( Yobi yb, Function speak, Function oir ){
+void init ( Yobi yb, Function speak, Function oir, Function log ){
   print('Inicializando.. Yobi');
 
   yb._speak = speak;
   yb._oir = oir;
+  yb._log = log;
 
   iniMandos( yb );
+  yb.log('Init.. Yobi');
 
   yb.ejecutaMando(  );
 

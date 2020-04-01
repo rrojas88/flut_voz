@@ -20,7 +20,7 @@ class _HomeState extends State<Home> {
   String _texto = '..nada aún';
 
   // ************************
-  bool _hasSpeech = false;
+  //bool _hasSpeech = false;
   double level = 0.0;
   String lastStatus = "";
   String _currentLocaleId = "";
@@ -54,7 +54,7 @@ class _HomeState extends State<Home> {
     if (!mounted) return;
 
     setState(() {
-      _hasSpeech = hasSpeech;
+      //_hasSpeech = hasSpeech;
     });
   }
 

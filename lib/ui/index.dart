@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-
 import 'dart:async';
+
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
 import 'package:flutter_tts/flutter_tts.dart';
 
-import 'package:flut_voz/ui/Funciones.dart';
+import 'package:flut_voz/ui/setting.dart';
+//import 'package:flut_voz/ui/Funciones.dart';
 import 'package:flut_voz/ui/Yobi.dart';
 
 class Home extends StatefulWidget {
@@ -29,55 +30,67 @@ class _HomeState extends State<Home> {
 
   // ************************
   bool _finalResult = true;
-  bool _hasSpeech = false;
+  //bool _hasSpeech = false;
   double level = 0.0;
   String lastStatus = "";
-  String _currentLocaleId = "";
+  String _currentLocaleId = "es_ES";
   List<LocaleName> _localeNames = [];
   final SpeechToText speech = SpeechToText();
   // ************************
   final FlutterTts flutterTts = FlutterTts();
   // *****
   final Yobi yb = new Yobi();
+  //Yobi yb;
 
+  double _rate = 0.5;
+  double _pitch = 1.0;
+  double _volume = 1.0;
+  //Setting _setting;
+  Setting _setting = new Setting(configHabla: (){}  );
 
   @override
-  initState() {
+  void initState() {
     super.initState();
+    log('=== === initState()');
 
     initTodo();
   }
 
+  void configHabla(double rate, double pitch, double volume){
+    print('config => Rate:$_rate, Pitch:$_pitch');
+    _rate = rate;
+    _pitch = pitch;
+    _volume = volume;
+    setState(() {   });
+  }
+
   Future<void> initTodo() async {
+    log('=== === initTodo()');
+
+    _setting.configHabla = configHabla;
+    log('=== === initTodo() x 2');
+
     print('*** Inicializado Reconocimiento ... ');
     bool hasSpeech = await speech.initialize(
         onError: errorListener, 
         onStatus: statusListener
     );
 
-    if (hasSpeech) {
-      _localeNames = await speech.locales();
-
-      var systemLocale = await speech.systemLocale();
-      _currentLocaleId = systemLocale.localeId;
-
-      //print('_currentLocaleId === $_currentLocaleId');
-    }
-
-    if (!mounted) return;
-
-    print('*** Inicializado Habla ... ');
+    log('*** Inicializado Habla ... ');
     flutterTts.setCompletionHandler(() {
       statusListener('No hablando');
 
       _continuarDespuesDeHablar();
     });
 
+    log('=== === initTodo() x 6');
     // ******
-    init( yb, _speak, startOir );
+    //yb = new Yobi();
+
+    init( yb, _speak, startOir, log );
 
     setState(() {
-      _hasSpeech = hasSpeech;
+      //_hasSpeech = hasSpeech;
     });
   }
 
@@ -89,6 +102,7 @@ class _HomeState extends State<Home> {
         centerTitle: true,
         backgroundColor: Colors.green,
       ),
+      drawer: _crearSetting(),
       backgroundColor: Color.fromRGBO(231, 250, 230, 1.0),
       body: SingleChildScrollView( // Corrige Error que no quepa en Pantalla !!!!!
         child: Container(
@@ -108,11 +122,18 @@ class _HomeState extends State<Home> {
               Text('finalResult: $_finalResult'),
               _crearCampoTexto(),
               Divider(),
+              _crearBotonInicializar(),
               Text(_strLogg )
             ],
           ),  
         ),
       ),
+    );
+  }
+
+  Widget _crearSetting(){
+    return Drawer(
+      child: _setting,
     );
   }
 
@@ -205,6 +226,18 @@ class _HomeState extends State<Home> {
       }
     );
   }
+  Widget _crearBotonInicializar() {
+    return IconButton(
+      icon: Icon( Icons.speaker_phone ),
+      iconSize: 30.0, 
+      color: Colors.green,
+      tooltip: 'Inicializar',
+      onPressed: () {
+        log('=== === === Inicializando todo..');
+        initTodo();
+      }
+    );
+  }
 
   // ******************************************************************
   void startOir() {
@@ -283,7 +316,13 @@ class _HomeState extends State<Home> {
 
     if( _finalResult ){
       log('Termina de oir -> yb.buscandoMando( _texto )');
-      yb.buscandoMando( _texto );
+      try {
+        yb.buscandoMando( _texto );
+        log('Pasa por buscandoMando() ');
+      } catch (e) {
+        print( e.toString() );
+        log( e.toString() );
+      }
     }
   }
 
@@ -319,6 +358,7 @@ class _HomeState extends State<Home> {
   Future _speak( String _texto, dynamic mando ) async {
     print("\nInicia Hablar........................................");
     log("\nInicia Hablar........................................");
+    print('Habla => Rate:$_rate, Pitch:$_pitch');
 
 
     print('-> Dira ====> $_texto');
@@ -331,9 +371,9 @@ class _HomeState extends State<Home> {
     //await flutterTts.setLanguage("es-ES");
     await flutterTts.setLanguage("es-US");
 
-    await flutterTts.setSpeechRate(0.5);
-    await flutterTts.setVolume(1.0);
-    await flutterTts.setPitch(1.0);
+    await flutterTts.setSpeechRate( _rate );
+    await flutterTts.setVolume( _volume );
+    await flutterTts.setPitch( _pitch );
     await flutterTts.isLanguageAvailable("es-ES");
 
     var result = await flutterTts.speak( _texto );
@@ -355,10 +395,11 @@ class _HomeState extends State<Home> {
   void _continuarDespuesDeHablar(){
     print("\n --> DespuesDeHablar........................................");
     log("--> DespuesDeHablar........................................");
-    
+
     if( yb.mando == null ){ // Viene de Reproducir Texto Manualmente
       // No hacer nada.. volver estado inicial
       print('--> => NO hay mando');
+      yb.accion = '';
 
     }
     else if( yb.mando['ejecutar'] ){ // Si Finaliza..pide algo mas
