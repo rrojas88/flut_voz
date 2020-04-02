@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 
 class Setting extends StatefulWidget {
-  Setting({Key key, this.configHabla }) : super(key: key);
+  Setting({Key key, this.configGeneral }) : super(key: key);
 
-  //double rate;
-  //double volume;
-  //double pitch;
-  Function configHabla;
+  Function configGeneral;
 
 
   @override
@@ -18,10 +15,7 @@ class _SettingState extends State<Setting> {
   double _rate = 0.5;
   double _volume = 1.0;
   double _pitch = 1.0;
-
-  double get rate => _rate;
-  double get volume => _volume;
-  double get pitch => _pitch;
+  bool _debugger = false;
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +37,7 @@ class _SettingState extends State<Setting> {
               _crearSliderVolume(),
               Text('Volume: $_volume'),
               SizedBox( height: 20.0 ),
+              _crearSwitchDebugger()
            ],
          ),
        ),
@@ -58,12 +53,13 @@ class _SettingState extends State<Setting> {
       min: 0.0,
       max: 1.0,
       onChanged: (valor){ 
-        widget.configHabla(valor, _pitch, _volume);
+        widget.configGeneral(valor, _pitch, _volume, _debugger);
         _rate = valor;
         setState(() {  }); 
       }
     );
   }
+
   Widget _crearSliderPitch() {
     return Slider(
       activeColor: Colors.green,
@@ -73,12 +69,13 @@ class _SettingState extends State<Setting> {
       min: 0.5,
       max: 2.0,
       onChanged: (valor){ 
-        widget.configHabla(_rate, valor, _volume);
+        widget.configGeneral(_rate, valor, _volume, _debugger);
         _pitch = valor;
         setState(() {  }); 
       }
     );
   }
+
   Widget _crearSliderVolume() {
     return Slider(
       activeColor: Colors.green,
@@ -88,13 +85,25 @@ class _SettingState extends State<Setting> {
       min: 0.0,
       max: 1.0,
       onChanged: (valor){
-        widget.configHabla(_rate, _pitch, valor);
+        widget.configGeneral(_rate, _pitch, valor, _debugger);
         _volume = valor;
         setState(() {  }); 
       }
     );
   }
 
+  Widget _crearSwitchDebugger() {
+    return SwitchListTile(
+      title: Text('Depurar'),
+      value: _debugger, 
+      onChanged: ( valor ){
+        widget.configGeneral(_rate, _pitch, _volume, valor);
+        _debugger = valor; 
+        setState(() { });
+      }
+    );
+
+  }
 
 
 }

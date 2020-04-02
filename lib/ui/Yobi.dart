@@ -1,6 +1,5 @@
 
 import 'package:flut_voz/ui/Mandos.dart';
-import 'package:flut_voz/ui/Funciones.dart';
 
 class Yobi {
   bool oye = false;
@@ -24,19 +23,14 @@ class Yobi {
     _texto += '';
     texto = _texto.trim().toLowerCase();
     
-    //List <Map <String, dynamic>> mandos = mandos;
-    
-    // Verificar primero si CANCELA
     if( texto.contains( new RegExp(r'(cancelar todo)|(parar todo)') ) ){
       print('Cancelada la ejecucion de la TAREA !!!');
-      //mando = mandos.elementAt( 1 ); // fin_app
       mando = clonarMando( mandos.elementAt(1) ); // fin_app
       accion = mando['accion'];
       ejecutaMando(  );
       return;
     }
     else {
-
       bool hayAccion = false;
 
       /// Hay Mando.. recepción de Parametros
@@ -49,17 +43,14 @@ class Yobi {
       else {
         for( Map m in mandos ){
           List <String> claves = m['claves'].split('|');
-          //print('__> recorreMandos..');
           log('__> recorreMandos..');
 
           if( ! hayAccion ){
 
             for( String clave in claves ){
               //print('__> recorreClaves: $clave');
-              
               if( accion == '' ){
                 if( texto.contains( clave ) ){
-                  // Encontrada la Clave
                   print( '__> Encontrada accion: ' + m['accion'] );
                   log( '__> Encontrada accion: ' + m['accion'] );
                   mando = clonarMando( m );
@@ -72,7 +63,6 @@ class Yobi {
               else{ // Hay una opcion Seleccionada
                 // No DIJO NADA
                 if( texto.trim() == '' ){
-                  //mando = mandos.elementAt(0); // algo_mas
                   mando = clonarMando( mandos.elementAt(0) ); // algo_mas
                   accion = mando['accion'];
                   break;
@@ -104,8 +94,7 @@ class Yobi {
   void ejecutaMando(  ){
     print("\n"+'== == == == == == == == == == >> ejecutaMando(  )');
     log('== == == == == == == == == == >> ejecutaMando(  )');
-    print('TEXTO: "$texto", del MANDO =>');
-    print(mando);
+
     pideMas = false;
 
     if( mando['paso'] == 0 ){
@@ -171,17 +160,8 @@ class Yobi {
     mandoX.forEach((clave, valor){
       clon.addAll({ clave: valor });
     });
-    //print("\n mandoX Clonado !!!!!!!!!!!!!!!!!!!!!!!!!!"); print(mandoX);
     return clon;
   }
-
-
-  String toString() => "Cant:${mandos.length} \n" + mandos.toString();
-
-  void verMandos(){
-    print( "Cant:${mandos.length} \n" + mandos.toString() );
-  }
-
 
 }
 

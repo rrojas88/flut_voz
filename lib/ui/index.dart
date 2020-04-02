@@ -8,11 +8,9 @@ import 'package:speech_to_text/speech_to_text.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 import 'package:flut_voz/ui/setting.dart';
-//import 'package:flut_voz/ui/Funciones.dart';
 import 'package:flut_voz/ui/Yobi.dart';
 
 class Home extends StatefulWidget {
-  //Home({Key key}) : super(key: key);
 
   @override
   _HomeState createState() => _HomeState();
@@ -30,68 +28,56 @@ class _HomeState extends State<Home> {
 
   // ************************
   bool _finalResult = true;
-  //bool _hasSpeech = false;
   double level = 0.0;
   String lastStatus = "";
   String _currentLocaleId = "es_ES";
   List<LocaleName> _localeNames = [];
   final SpeechToText speech = SpeechToText();
-  // ************************
+
   final FlutterTts flutterTts = FlutterTts();
-  // *****
+
   final Yobi yb = new Yobi();
-  //Yobi yb;
+
 
   double _rate = 0.5;
   double _pitch = 1.0;
   double _volume = 1.0;
-  //Setting _setting;
-  Setting _setting = new Setting(configHabla: (){}  );
+  bool _debugger = false;
+  Setting _setting = new Setting(configGeneral: (){}  );
 
   @override
   void initState() {
     super.initState();
-    log('=== === initState()');
-
     initTodo();
   }
 
-  void configHabla(double rate, double pitch, double volume){
-    print('config => Rate:$_rate, Pitch:$_pitch');
+  void configGeneral(double rate, double pitch, double volume, bool debugger){
+    print('config => debugger:$debugger');
     _rate = rate;
     _pitch = pitch;
     _volume = volume;
+    _debugger = debugger;
     setState(() {   });
   }
 
   Future<void> initTodo() async {
-    log('=== === initTodo()');
 
-    _setting.configHabla = configHabla;
-    log('=== === initTodo() x 2');
+    _setting.configGeneral = configGeneral;
 
-    print('*** Inicializado Reconocimiento ... ');
     bool hasSpeech = await speech.initialize(
         onError: errorListener, 
         onStatus: statusListener
     );
 
-    log('*** Inicializado Habla ... ');
     flutterTts.setCompletionHandler(() {
       statusListener('No hablando');
 
       _continuarDespuesDeHablar();
     });
 
-    log('=== === initTodo() x 6');
-    // ******
-    //yb = new Yobi();
-
     init( yb, _speak, startOir, log );
 
-    setState(() {
-      //_hasSpeech = hasSpeech;
-    });
+    setState(() {  });
   }
 
   @override
@@ -119,10 +105,10 @@ class _HomeState extends State<Home> {
               _crearBotonesSecundarios(),
               SizedBox( height: 16.0 ),
               Text('Nivel voz: $level'),
-              Text('finalResult: $_finalResult'),
+              //Text('finalResult: $_finalResult'),
               _crearCampoTexto(),
               Divider(),
-              _crearBotonInicializar(),
+              //_crearBotonInicializar(),
               Text(_strLogg )
             ],
           ),  
@@ -138,9 +124,11 @@ class _HomeState extends State<Home> {
   }
 
   void log( String info ){
-    setState(() {
-      _strLogg += "\n"+info;
-    });
+    if ( _debugger ){
+      setState(() {
+        _strLogg += "\n"+info;
+      });
+    }
   }
 
 
@@ -233,7 +221,6 @@ class _HomeState extends State<Home> {
       color: Colors.green,
       tooltip: 'Inicializar',
       onPressed: () {
-        log('=== === === Inicializando todo..');
         initTodo();
       }
     );
@@ -285,6 +272,8 @@ class _HomeState extends State<Home> {
     print('Error ==> ');
     print("${error.errorMsg} - ${error.permanent}");
     print(error);
+    log('Error ==>');
+    print(error.errorMsg);
 
     _estado = "${error.errorMsg} - ${error.permanent}";
 
@@ -292,8 +281,7 @@ class _HomeState extends State<Home> {
   }
 
   void statusListener(String status) {
-    //print('Estado = $status');
-    //_estado = (status=='listening') ? 'Oyendo' : 'No oyendo';
+    
     switch( status ){
       case 'listening':
         _estado = 'Oyendo'; break;
@@ -315,10 +303,9 @@ class _HomeState extends State<Home> {
     setState(() {  });
 
     if( _finalResult ){
-      log('Termina de oir -> yb.buscandoMando( _texto )');
+      log('Termina de oir -> yb.buscandoMando( texto )');
       try {
         yb.buscandoMando( _texto );
-        log('Pasa por buscandoMando() ');
       } catch (e) {
         print( e.toString() );
         log( e.toString() );
@@ -358,12 +345,7 @@ class _HomeState extends State<Home> {
   Future _speak( String _texto, dynamic mando ) async {
     print("\nInicia Hablar........................................");
     log("\nInicia Hablar........................................");
-    print('Habla => Rate:$_rate, Pitch:$_pitch');
-
-
     print('-> Dira ====> $_texto');
-    //print('Info Mando'); print(mando);
-    print("\n");
 
     statusListener('Hablando');
     yb.mando = mando; // Puede venir NULL
@@ -377,15 +359,6 @@ class _HomeState extends State<Home> {
     await flutterTts.isLanguageAvailable("es-ES");
 
     var result = await flutterTts.speak( _texto );
-    //
-    
-    
-    //var now = new DateTime.now();
-    //DateTime now_ = new DateTime.now();
-    //print('now_'); print(now_);
-    //String hoy = now_.toString();
-    //print(hoy);
-    
 
   }
   
@@ -423,7 +396,6 @@ class _HomeState extends State<Home> {
       yb.ejecutaMando();
     }
     else{ // Termina Todo
-      print('*********');
       print('--> => "Termina TODO ???"');
 
       if( yb.pideMas ){
